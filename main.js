@@ -115,58 +115,81 @@ const createTrayIcon = () => {
 const handleAppendShortcut = async () => {
   try {
     console.log('🔥 CopyStack append shortcut triggered!');
-    
+
     // Store current clipboard content
-  const currentClipboard = clipboard.readText() || '';
-    console.log('Current clipboard length:', currentClipboard.length);
-    
-    // Clear clipboard to ensure we only get the newly selected text
-    clipboard.clear();
-    console.log('Clipboard cleared, simulating copy...');
-    
+    const originalClipboard = clipboard.readText() || '';
+    console.log('Original clipboard length:', originalClipboard.length);
+
     // Simulate Ctrl+C (or Cmd+C on Mac) to copy selected text
-    
     if (process.platform === 'darwin') {
       // macOS - use AppleScript to simulate Cmd+C
-      execSync('osascript -e "tell application \\"System Events\\" to keystroke \\"c\\" using command down"');
+      execSync('osascript -e "tell application \\"System Events\\" to keystroke \\"c\\" using command down"', { timeout: 2000 });
     } else if (process.platform === 'win32') {
       // Windows - use PowerShell to simulate Ctrl+C
-      execSync('powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait(\\"^c\\")"');
+      execSync('powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait(\\"^c\\")"', { timeout: 2000 });
     } else {
       // Linux - use xdotool if available
-      execSync('xdotool key ctrl+c');
+      execSync('xdotool key ctrl+c', { timeout: 2000 });
     }
-    
+
     // Small delay to let the copy operation complete
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    // Get the newly copied text
-    const selectedText = clipboard.readText() || '';
-    console.log('Selected text length:', selectedText.length);
-    
-    if (selectedText && selectedText !== currentClipboard) {
-      // Append with space separator (not newline)
-      const appendedText = currentClipboard 
-        ? currentClipboard + ' ' + selectedText 
-        : selectedText;
-      
+    await new Promise(resolve => setTimeout(resolve, 150));
+
+    // Check what we have now
+    const newClipboard = clipboard.readText() || '';
+    console.log('New clipboard length:', newClipboard.length);
+
+    if (newClipboard && newClipboard !== originalClipboard) {
+      // Text was copied! Append to original
+      const appendedText = originalClipboard
+        ? originalClipboard + ' ' + newClipboard
+        : newClipboard;
+
       clipboard.writeText(appendedText);
       console.log('✅ Text appended! Total length:', appendedText.length);
     } else {
-      // Restore original clipboard if nothing was selected
-      if (currentClipboard) {
-        clipboard.writeText(currentClipboard);
+      // No new text selected or copy failed - restore original
+      if (originalClipboard) {
+        clipboard.writeText(originalClipboard);
+        console.log('📋 Restored original clipboard (no new text selected)');
+      } else {
+        console.log('📋 No text selected and no original clipboard to restore');
       }
-      console.log('⚠️ No new text selected, clipboard restored');
     }
   } catch (error) {
     console.error('❌ Error in handleAppendShortcut:', error);
-    // Try to restore clipboard on error
-    const currentClipboard = clipboard.readText() || '';
-    if (!currentClipboard) {
-      // If clipboard is empty due to our clear(), try to restore it
-      // This is a fallback - in practice the error handling should be more robust
-      console.log('Attempting to restore clipboard after error...');
+
+    // Check if this is likely a permissions issue
+    if (process.platform === 'darwin' && error.message && error.message.includes('osascript')) {
+      console.log('⚠️ AppleScript failed - likely missing accessibility permissions');
+
+      // Show dialog to user about permissions
+      setTimeout(async () => {
+        const result = await dialog.showMessageBox(null, {
+          type: 'error',
+          title: 'CopyStack Permission Error',
+          message: 'Cmd+Shift+C failed to copy text',
+          detail: 'This usually means CopyStack doesn\'t have accessibility permissions.\n\nPlease check System Settings → Privacy & Security → Accessibility and make sure CopyStack is enabled.\n\nThen restart CopyStack.',
+          buttons: ['Open System Settings', 'OK'],
+          defaultId: 0
+        });
+
+        if (result.response === 0) {
+          openAccessibilitySettings();
+        }
+      }, 500); // Small delay to let any other dialogs close
+    }
+
+    // On error, try to restore the original clipboard
+    try {
+      const currentClipboard = clipboard.readText() || '';
+      if (!currentClipboard && originalClipboard) {
+        // If clipboard is empty but we had original content, restore it
+        clipboard.writeText(originalClipboard);
+        console.log('📋 Restored original clipboard after error');
+      }
+    } catch (restoreError) {
+      console.error('❌ Failed to restore clipboard after error:', restoreError);
     }
   }
 };
@@ -346,21 +369,22 @@ const checkAccessibilityPermissions = async (showDialog = true) => {
     }
     
     if (!hasPermission && showDialog) {
-      console.log('Accessibility permission required');
-      
+      console.log('❌ Accessibility permissions required for Cmd+Shift+C to work');
+
       // Show permission dialog
       const result = await dialog.showMessageBox(null, {
-        type: 'info',
+        type: 'warning',
         title: 'CopyStack Setup Required',
         message: 'CopyStack needs accessibility permissions to function properly.',
-        detail: 'CopyStack should now appear in System Settings → Privacy & Security → Accessibility.\n\nPlease enable CopyStack in the list, then restart the app.\n\nThis allows CopyStack to capture selected text when you press Cmd+Shift+C.',
+        detail: 'CopyStack needs to simulate keyboard shortcuts (Cmd+C) to copy selected text.\n\nPlease:\n1. Click "Open System Settings" below\n2. Find CopyStack in the Accessibility list\n3. Enable the checkbox\n4. Restart CopyStack\n\nWithout this, the Cmd+Shift+C shortcut cannot work.',
         buttons: ['Open System Settings', 'Continue Anyway', 'Quit'],
         defaultId: 0,
         cancelId: 2
       });
-      
+
       if (result.response === 0) {
         openAccessibilitySettings();
+        return false; // Return false to indicate we need to restart
       } else if (result.response === 2) {
         app.quit();
         return false;
