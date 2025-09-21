@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🧹 Cleaning up ClipAppend project for distribution..."
+echo "🧹 Cleaning up CopyStack project for distribution..."
 echo "=================================================="
 
 cd /Users/loganrainey/Desktop/CodingProjects/clipappend
@@ -32,30 +32,30 @@ npm install
 if [ $? -eq 0 ]; then
     echo "✅ Dependencies installed!"
     echo ""
-    echo "🔨 Building ClipAppend..."
+    echo "🔨 Building CopyStack..."
     npm run build
     
     if [ $? -eq 0 ]; then
         echo ""
-        echo "🎉 SUCCESS! ClipAppend is ready!"
+        echo "🎉 SUCCESS! CopyStack is ready!"
         echo ""
         echo "📱 How it works:"
         echo "   1. Select text anywhere"
         echo "   2. Press Ctrl+Shift+C (⌘⇧C on Mac)"
-        echo "   3. Text appends to your clipboard!"
+        echo "   3. Text stacks to your clipboard!"
         echo "   4. Normal Ctrl+C still works as before"
         echo ""
-        echo "🚀 Starting ClipAppend..."
-        open dist/mac/ClipAppend.app
+        echo "🚀 Starting CopyStack..."
+        open dist/mac/CopyStack.app
         
         echo ""
         echo "📦 Files ready for distribution:"
-        ls -la dist/mac/ 2>/dev/null || echo "   • ClipAppend.app"
-        ls -la dist/*.dmg 2>/dev/null || echo "   • ClipAppend.dmg"
+        ls -la dist/mac/ 2>/dev/null || echo "   • CopyStack.app"
+        ls -la dist/*.dmg 2>/dev/null || echo "   • CopyStack.dmg"
         echo ""
         echo "💰 Ready to sell! Check HOW-TO-SELL.md for details."
         echo ""
-        echo "✨ Look for the clipboard icon in your menu bar!"
+        echo "✨ Look for the CopyStack icon in your menu bar!"
         
     else
         echo "❌ Build failed. Check errors above."

@@ -3,43 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClipAppend - Simple Clipboard Tool</title>
+    <title>CopyStack - Advanced Clipboard Tool</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>📋 ClipAppend</h1>
-        <p class="subtitle">Simple keyboard shortcut for appending text</p>
+        <h1>📚 CopyStack</h1>
+        <p class="subtitle">Advanced keyboard shortcuts for power users</p>
         
         <div class="section status-section">
-            <h2>⚡ How It Works</h2>
+            <h2>⚡ How CopyStack Works</h2>
             <div class="how-it-works">
                 <div class="step-item">
                     <span class="step-number">1</span>
                     <div class="step-content">
-                        <strong>Copy initial text</strong>
-                        <p>Select text and press Cmd+C (normal copy)</p>
+                        <strong>Select text anywhere</strong>
+                        <p>Highlight text in any app, website, or document</p>
                     </div>
                 </div>
                 <div class="step-item">
                     <span class="step-number">2</span>
                     <div class="step-content">
-                        <strong>Select more text</strong>
-                        <p>Highlight additional text anywhere</p>
+                        <strong>Press Cmd+Shift+C</strong>
+                        <p>Advanced append mode - builds your clipboard stack</p>
                     </div>
                 </div>
                 <div class="step-item">
                     <span class="step-number">3</span>
                     <div class="step-content">
-                        <strong>Press Cmd+Shift+C</strong>
-                        <p>This appends the selected text to your clipboard</p>
+                        <strong>Keep stacking</strong>
+                        <p>Collect text from multiple sources effortlessly</p>
                     </div>
                 </div>
                 <div class="step-item">
                     <span class="step-number">4</span>
                     <div class="step-content">
-                        <strong>Paste normally</strong>
-                        <p>Use Cmd+V to paste all your collected text</p>
+                        <strong>Paste your stack</strong>
+                        <p>Use Cmd+V to paste all collected text at once</p>
                     </div>
                 </div>
             </div>
@@ -50,71 +50,72 @@
             <div class="shortcuts">
                 <div class="shortcut-item">
                     <div class="shortcut-keys">
-                        <kbd>Ctrl</kbd> + <kbd>C</kbd>
-                        <span class="mac-text">(<kbd>⌘</kbd> + <kbd>C</kbd> on Mac)</span>
+                        <kbd>Cmd</kbd> + <kbd>C</kbd>
+                        <span class="mac-text">(Ctrl+C on Windows)</span>
                     </div>
                     <span>Normal copy - replaces clipboard (unchanged)</span>
                 </div>
                 <div class="shortcut-item primary-shortcut">
                     <div class="shortcut-keys">
-                        <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>
-                        <span class="mac-text">(<kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>C</kbd> on Mac)</span>
+                        <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>
+                        <span class="mac-text">(Ctrl+Shift+C on Windows)</span>
                     </div>
-                    <span>Copy selected text and append to existing clipboard</span>
+                    <span>Advanced append - builds your clipboard stack</span>
                 </div>
             </div>
         </div>
 
         <div class="section">
-            <h2>🧪 Test It Now</h2>
-            <p><strong>Try it with these sample texts:</strong></p>
+            <h2>🧪 Test CopyStack Now</h2>
+            <p><strong>Try the advanced clipboard stacking:</strong></p>
             <div class="test-texts">
-                <div class="test-text" onclick="selectText(this)">First sample text to copy</div>
-                <div class="test-text" onclick="selectText(this)">Second sample text to append</div>
-                <div class="test-text" onclick="selectText(this)">Third sample text to append</div>
+                <div class="test-text" onclick="selectText(this)">Research finding #1: Lorem ipsum dolor sit amet</div>
+                <div class="test-text" onclick="selectText(this)">Research finding #2: Consectetur adipiscing elit</div>
+                <div class="test-text" onclick="selectText(this)">Research finding #3: Sed do eiusmod tempor incididunt</div>
             </div>
             <div class="test-instructions">
-                <p><strong>Instructions:</strong></p>
+                <p><strong>Power User Instructions:</strong></p>
                 <ol>
-                    <li>Click on "First sample text" above to select it</li>
-                    <li>Press <strong>Cmd+C</strong> to copy it normally</li>
-                    <li>Click on "Second sample text" to select it</li>
-                    <li>Press <strong>Cmd+Shift+C</strong> to copy and append it</li>
-                    <li>Check your clipboard below - you should see both texts!</li>
+                    <li>Click "Research finding #1" to select it</li>
+                    <li>Press <strong>Cmd+C</strong> to copy normally</li>
+                    <li>Click "Research finding #2" to select it</li>
+                    <li>Press <strong>Cmd+Shift+C</strong> to append to stack</li>
+                    <li>Click "Research finding #3" and press <strong>Cmd+Shift+C</strong> again</li>
+                    <li>Check your clipboard below - you should see all findings!</li>
                 </ol>
             </div>
         </div>
         
         <div class="section">
-            <h2>📋 Current Clipboard</h2>
-            <textarea id="clipboardContent" readonly placeholder="Your clipboard content will appear here..."></textarea>
+            <h2>📋 Current Clipboard Stack</h2>
+            <textarea id="clipboardContent" readonly placeholder="Your clipboard stack will appear here..."></textarea>
             <div class="clipboard-controls">
-                <button id="refreshClipboard">🔄 Refresh</button>
-                <button id="clearClipboard">🗑️ Clear Clipboard</button>
+                <button id="refreshClipboard">🔄 Refresh Stack</button>
+                <button id="clearClipboard">🗑️ Clear Stack</button>
             </div>
         </div>
         
         <div class="section">
-            <h2>💡 Perfect For</h2>
+            <h2>💡 Perfect For Power Users</h2>
             <ul>
-                <li><strong>Research:</strong> Collect quotes from multiple websites</li>
-                <li><strong>Writing:</strong> Gather notes and references from different sources</li>
-                <li><strong>Documentation:</strong> Compile information from various documents</li>
-                <li><strong>Lists:</strong> Build shopping lists, todo items, contact info</li>
-                <li><strong>Programming:</strong> Collect code snippets and documentation</li>
-                <li><strong>Email:</strong> Compose messages with content from multiple sources</li>
+                <li><strong>Researchers:</strong> Stack quotes and citations from multiple sources</li>
+                <li><strong>Writers:</strong> Build comprehensive notes and references</li>
+                <li><strong>Developers:</strong> Collect code snippets and documentation</li>
+                <li><strong>Students:</strong> Compile research for academic papers</li>
+                <li><strong>Professionals:</strong> Build reports from multiple data sources</li>
+                <li><strong>Content Creators:</strong> Gather inspiration from various platforms</li>
             </ul>
         </div>
         
         <div class="section">
-            <h2>⚙️ Background Service</h2>
-            <p>ClipAppend runs silently in your menu bar. The Ctrl+Shift+C shortcut works system-wide in any application - browsers, text editors, PDFs, anywhere you can select text!</p>
-            <p>You can safely close this window - ClipAppend will keep running in the background.</p>
-            <button id="hideWindow">Hide This Window</button>
+            <h2>⚙️ Advanced Background Service</h2>
+            <p>CopyStack runs as an advanced system service in your menu bar. The Cmd+Shift+C shortcut works system-wide in any application - browsers, editors, PDFs, anywhere you can select text!</p>
+            <p>Close this window anytime - CopyStack continues running in the background like a professional tool.</p>
+            <button id="hideWindow">Hide Settings Window</button>
         </div>
         
         <div class="footer">
-            <p>ClipAppend v1.0 - Simple tools for productivity 🚀</p>
+            <p>CopyStack v1.0 - Professional productivity tools for power users 🚀</p>
         </div>
     </div>
 
@@ -128,7 +129,7 @@
         
         function updateClipboardDisplay() {
             const clipText = clipboard.readText();
-            clipboardTextarea.value = clipText || 'Clipboard is empty - try the test above!';
+            clipboardTextarea.value = clipText || 'Clipboard stack is empty - try the test above!';
         }
         
         function selectText(element) {
