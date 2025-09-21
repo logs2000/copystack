@@ -8,9 +8,12 @@
     "build": "electron-builder --mac",
     "build-win": "electron-builder --win",
     "build-linux": "electron-builder --linux",
+    "build-all": "electron-builder --mac --win --linux",
     "clean": "rm -rf dist node_modules package-lock.json && npm install",
     "dist": "npm run build",
-    "publish": "electron-builder --mac --publish=always"
+    "dist-all": "npm run build-all",
+    "publish": "electron-builder --publish=always",
+    "publish-win": "electron-builder --win --publish=always"
   },
   "keywords": [
     "clipboard",
@@ -28,7 +31,8 @@
     "electron-builder": "^24.13.3"
   },
   "dependencies": {
-    "electron-updater": "^6.1.7"
+    "electron-updater": "^6.1.7",
+    "electron-log": "^4.4.8"
   },
   "build": {
     "appId": "com.copystack.productivity",
@@ -37,6 +41,13 @@
     "directories": {
       "output": "dist"
     },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "logs2000",
+        "repo": "copystack"
+      }
+    ],
     "files": [
       "main.js",
       "index.html",
@@ -56,7 +67,25 @@
       "darkModeSupport": true
     },
     "win": {
-      "target": "nsis"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "publisherName": "CopyStack",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": false,
+      "createStartMenuShortcut": true,
+      "shortcutName": "CopyStack"
     },
     "linux": {
       "target": "AppImage"

@@ -1,10 +1,50 @@
-const { app, BrowserWindow, Tray, Menu, globalShortcut, clipboard, nativeImage, systemPreferences, dialog, nativeTheme } = require('electron');
+const { app, BrowserWindow, Tray, Menu, globalShortcut, clipboard, nativeImage, systemPreferences, dialog, nativeTheme, ipcMain } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const fs = require('fs');
 
 let tray = null;
 let mainWindow = null;
 let pendingAppend = false;
+
+// Configure auto-updater
+autoUpdater.logger = require('electron-log');
+autoUpdater.logger.transports.file.level = 'info';
+
+// Auto-updater event handlers
+autoUpdater.on('checking-for-update', () => {
+  console.log('Checking for update...');
+});
+
+autoUpdater.on('update-available', (info) => {
+  console.log('Update available.');
+});
+
+autoUpdater.on('update-not-available', (info) => {
+  console.log('Update not available.');
+});
+
+autoUpdater.on('error', (err) => {
+  console.log('Error in auto-updater. ' + err);
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  let log_message = "Download speed: " + progressObj.bytesPerSecond;
+  log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+  log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+  console.log(log_message);
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('Update downloaded');
+  // Show notification to user
+  if (tray) {
+    tray.displayBalloon({
+      title: 'CopyStack Update Ready',
+      content: 'Update downloaded. Restart to apply the new version.',
+    });
+  }
+});
 
 // Create adaptive tray icon based on OS theme
 const createTrayIcon = () => {
@@ -164,6 +204,13 @@ const createTray = () => {
             mainWindow.focus();
             console.log('Settings window shown');
           }
+        }
+      },
+      {
+        label: 'Check for Updates',
+        click: () => {
+          autoUpdater.checkForUpdatesAndNotify();
+          console.log('Checking for updates...');
       }
     },
     {
@@ -319,6 +366,16 @@ app.whenReady().then(async () => {
   if (!hasPermissions && process.platform === 'darwin') {
     console.log('Warning: Accessibility permissions not granted - some features may not work');
   }
+
+  // Check for updates after startup (delay to avoid interfering with initial setup)
+  setTimeout(() => {
+    autoUpdater.checkForUpdatesAndNotify();
+  }, 5000); // 5 second delay
+});
+
+// IPC handlers for renderer process
+ipcMain.on('check-for-updates', () => {
+  autoUpdater.checkForUpdatesAndNotify();
 });
 
 app.on('will-quit', () => {

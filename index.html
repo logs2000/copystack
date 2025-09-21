@@ -131,6 +131,7 @@
                 <button id="hideWindow">Hide Settings Window</button>
                 <button id="checkPermissions">Check Permission Status</button>
                 <button id="openAccessibilitySettings">Open Accessibility Settings</button>
+                <button id="checkUpdates">Check for Updates</button>
             </div>
         </div>
         
@@ -149,6 +150,7 @@
         const hideBtn = document.getElementById('hideWindow');
         const checkPermissionsBtn = document.getElementById('checkPermissions');
         const openSettingsBtn = document.getElementById('openAccessibilitySettings');
+        const checkUpdatesBtn = document.getElementById('checkUpdates');
         
         function updateClipboardDisplay() {
             const clipText = clipboard.readText();
@@ -194,6 +196,17 @@
             }
         }
         
+        function checkForUpdates() {
+            const { ipcRenderer } = require('electron');
+            try {
+                // Send message to main process to check for updates
+                ipcRenderer.send('check-for-updates');
+                alert('Checking for updates... You will be notified if an update is available.');
+            } catch (error) {
+                alert('Update check is only available in the packaged application.');
+            }
+        }
+        
         refreshBtn.addEventListener('click', updateClipboardDisplay);
         
         clearBtn.addEventListener('click', () => {
@@ -208,6 +221,8 @@
         checkPermissionsBtn.addEventListener('click', checkAccessibilityPermission);
         
         openSettingsBtn.addEventListener('click', openAccessibilitySettings);
+        
+        checkUpdatesBtn.addEventListener('click', checkForUpdates);
         
         // Update clipboard display on load
         updateClipboardDisplay();
