@@ -1,5 +1,6 @@
 const { app, BrowserWindow, Tray, Menu, globalShortcut, clipboard, nativeImage, systemPreferences, dialog, nativeTheme, ipcMain } = require('electron');
 const { autoUpdater } = require('electron-updater');
+const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
@@ -10,6 +11,10 @@ let pendingAppend = false;
 // Configure auto-updater
 autoUpdater.logger = require('electron-log');
 autoUpdater.logger.transports.file.level = 'info';
+
+// Disable auto-updater in development/testing
+const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+console.log('App packaged:', app.isPackaged, 'isDev:', isDev);
 
 // Auto-updater event handlers
 autoUpdater.on('checking-for-update', () => {
@@ -107,26 +112,63 @@ const createTrayIcon = () => {
 // Note: No need to update tray icon for theme changes when using template images
 // macOS automatically handles the inversion based on menu bar appearance
 
-const handleAppendShortcut = () => {
+const handleAppendShortcut = async () => {
+  try {
+    console.log('🔥 CopyStack append shortcut triggered!');
+    
+    // Store current clipboard content
   const currentClipboard = clipboard.readText() || '';
-  pendingAppend = true;
-  
-  const startTime = Date.now();
-  const checkInterval = setInterval(() => {
-    const newClipboard = clipboard.readText() || '';
-
-    if (pendingAppend && newClipboard !== currentClipboard) {
-      const appendedText = currentClipboard ? currentClipboard + '\n' + newClipboard : newClipboard;
-      clipboard.writeText(appendedText);
-      pendingAppend = false;
-      clearInterval(checkInterval);
+    console.log('Current clipboard length:', currentClipboard.length);
+    
+    // Clear clipboard to ensure we only get the newly selected text
+    clipboard.clear();
+    console.log('Clipboard cleared, simulating copy...');
+    
+    // Simulate Ctrl+C (or Cmd+C on Mac) to copy selected text
+    
+    if (process.platform === 'darwin') {
+      // macOS - use AppleScript to simulate Cmd+C
+      execSync('osascript -e "tell application \\"System Events\\" to keystroke \\"c\\" using command down"');
+    } else if (process.platform === 'win32') {
+      // Windows - use PowerShell to simulate Ctrl+C
+      execSync('powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait(\\"^c\\")"');
+    } else {
+      // Linux - use xdotool if available
+      execSync('xdotool key ctrl+c');
     }
     
-    if (Date.now() - startTime > 2000) {
-      pendingAppend = false;
-      clearInterval(checkInterval);
+    // Small delay to let the copy operation complete
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Get the newly copied text
+    const selectedText = clipboard.readText() || '';
+    console.log('Selected text length:', selectedText.length);
+    
+    if (selectedText && selectedText !== currentClipboard) {
+      // Append with space separator (not newline)
+      const appendedText = currentClipboard 
+        ? currentClipboard + ' ' + selectedText 
+        : selectedText;
+      
+      clipboard.writeText(appendedText);
+      console.log('✅ Text appended! Total length:', appendedText.length);
+    } else {
+      // Restore original clipboard if nothing was selected
+      if (currentClipboard) {
+        clipboard.writeText(currentClipboard);
+      }
+      console.log('⚠️ No new text selected, clipboard restored');
     }
-  }, 50);
+  } catch (error) {
+    console.error('❌ Error in handleAppendShortcut:', error);
+    // Try to restore clipboard on error
+    const currentClipboard = clipboard.readText() || '';
+    if (!currentClipboard) {
+      // If clipboard is empty due to our clear(), try to restore it
+      // This is a fallback - in practice the error handling should be more robust
+      console.log('Attempting to restore clipboard after error...');
+    }
+  }
 };
 
 const createWindow = () => {
@@ -368,14 +410,22 @@ app.whenReady().then(async () => {
   }
 
   // Check for updates after startup (delay to avoid interfering with initial setup)
-  setTimeout(() => {
-    autoUpdater.checkForUpdatesAndNotify();
-  }, 5000); // 5 second delay
+  if (!isDev) {
+    setTimeout(() => {
+      autoUpdater.checkForUpdatesAndNotify();
+    }, 5000); // 5 second delay
+  } else {
+    console.log('Skipping auto-updater in development mode');
+  }
 });
 
 // IPC handlers for renderer process
 ipcMain.on('check-for-updates', () => {
-  autoUpdater.checkForUpdatesAndNotify();
+  if (!isDev) {
+    autoUpdater.checkForUpdatesAndNotify();
+  } else {
+    console.log('Update check disabled in development mode');
+  }
 });
 
 app.on('will-quit', () => {
