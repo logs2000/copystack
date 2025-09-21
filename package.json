@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "CopyStack - Advanced clipboard stacking tool. Press Ctrl+Shift+C to stack text instead of replacing it.",
   "main": "main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/logs2000/copystack.git"
+  },
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --mac",
@@ -41,30 +45,32 @@
     "directories": {
       "output": "dist"
     },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "logs2000",
-        "repo": "copystack"
-      }
-    ],
+    "publish": {
+      "provider": "github",
+      "owner": "logs2000",
+      "repo": "copystack"
+    },
     "files": [
       "main.js",
       "index.html",
       "style.css",
       "package.json",
+      "CopyStack.icns",
       "CSLogo - Black.png",
       "CSLogo - White.png"
     ],
     "mac": {
       "category": "public.app-category.productivity",
+      "icon": "CopyStack.icns",
       "target": [
         {
           "target": "dmg",
           "arch": ["x64", "arm64"]
         }
       ],
-      "darkModeSupport": true
+      "darkModeSupport": true,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
     },
     "win": {
       "target": [
