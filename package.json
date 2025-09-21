@@ -35,8 +35,8 @@
     "electron-builder": "^24.13.3"
   },
   "dependencies": {
-    "electron-updater": "^6.1.7",
-    "electron-log": "^4.4.8"
+    "electron-log": "^4.4.8",
+    "electron-updater": "^6.1.7"
   },
   "build": {
     "appId": "com.copystack.productivity",
@@ -47,8 +47,8 @@
     },
     "publish": {
       "provider": "github",
-      "owner": "logs2000",
-      "repo": "copystack"
+      "owner": "yourusername",
+      "repo": "clipappend"
     },
     "files": [
       "main.js",
@@ -65,22 +65,36 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "darkModeSupport": true,
       "hardenedRuntime": false,
-      "gatekeeperAssess": false
+      "gatekeeperAssess": false,
+      "entitlements": null,
+      "entitlementsInherit": null,
+      "extendInfo": {
+        "NSAppleEventsUsageDescription": "CopyStack needs to simulate keyboard shortcuts to copy selected text.",
+        "NSSystemAdministrationUsageDescription": "CopyStack needs system permissions to function properly."
+      }
     },
     "win": {
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64", "ia32"]
+          "arch": [
+            "x64",
+            "ia32"
+          ]
         },
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "publisherName": "CopyStack",
@@ -110,11 +124,6 @@
           "path": "/Applications"
         }
       ]
-    },
-    "publish": {
-      "provider": "github",
-      "owner": "yourusername",
-      "repo": "clipappend"
     }
   }
 }

@@ -121,15 +121,66 @@ const handleAppendShortcut = async () => {
     console.log('Original clipboard length:', originalClipboard.length);
 
     // Simulate Ctrl+C (or Cmd+C on Mac) to copy selected text
+    let copySuccess = false;
+
     if (process.platform === 'darwin') {
-      // macOS - use AppleScript to simulate Cmd+C
-      execSync('osascript -e "tell application \\"System Events\\" to keystroke \\"c\\" using command down"', { timeout: 2000 });
+      try {
+        // macOS - try multiple AppleScript approaches
+        console.log('🔄 Trying AppleScript copy simulation...');
+
+        // Method 1: System Events (most common)
+        try {
+          execSync('osascript -e "tell application \\"System Events\\" to keystroke \\"c\\" using command down"', { timeout: 2000 });
+          copySuccess = true;
+          console.log('✅ AppleScript (System Events) successful');
+        } catch (e1) {
+          console.log('❌ System Events failed, trying direct approach...');
+          // Method 2: Direct keystroke without "using command down"
+          try {
+            execSync('osascript -e "tell application \\"System Events\\" to keystroke \\"c\\" & (ASCII character 99)"', { timeout: 2000 });
+            copySuccess = true;
+            console.log('✅ AppleScript (direct) successful');
+          } catch (e2) {
+            console.log('❌ Direct approach failed, trying key code...');
+            // Method 3: Use key code for Cmd+C
+            try {
+              execSync('osascript -e "tell application \\"System Events\\" to key code 8 using command down"', { timeout: 2000 });
+              copySuccess = true;
+              console.log('✅ AppleScript (key code) successful');
+            } catch (e3) {
+              console.log('❌ All AppleScript methods failed');
+              throw new Error('AppleScript failed');
+            }
+          }
+        }
+      } catch (appleScriptError) {
+        console.log('❌ AppleScript completely failed:', appleScriptError.message);
+        throw appleScriptError;
+      }
     } else if (process.platform === 'win32') {
-      // Windows - use PowerShell to simulate Ctrl+C
-      execSync('powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait(\\"^c\\")"', { timeout: 2000 });
+      try {
+        // Windows - use PowerShell to simulate Ctrl+C
+        execSync('powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait(\\"^c\\")"', { timeout: 2000 });
+        copySuccess = true;
+        console.log('✅ Windows PowerShell copy successful');
+      } catch (error) {
+        console.log('❌ Windows copy simulation failed:', error.message);
+        throw error;
+      }
     } else {
-      // Linux - use xdotool if available
-      execSync('xdotool key ctrl+c', { timeout: 2000 });
+      try {
+        // Linux - use xdotool if available
+        execSync('xdotool key ctrl+c', { timeout: 2000 });
+        copySuccess = true;
+        console.log('✅ Linux xdotool copy successful');
+      } catch (error) {
+        console.log('❌ Linux copy simulation failed:', error.message);
+        throw error;
+      }
+    }
+
+    if (!copySuccess) {
+      throw new Error('All copy simulation methods failed');
     }
 
     // Small delay to let the copy operation complete
