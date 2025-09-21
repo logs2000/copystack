@@ -1,7 +1,7 @@
 {
   "name": "copystack",
   "version": "1.0.0",
-  "description": "CopyStack - Keyboard shortcut to append text instead of replacing it",
+  "description": "CopyStack - Advanced clipboard stacking tool. Press Ctrl+Shift+C to stack text instead of replacing it.",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -9,7 +9,8 @@
     "build-win": "electron-builder --win",
     "build-linux": "electron-builder --linux",
     "clean": "rm -rf dist node_modules package-lock.json && npm install",
-    "dist": "npm run build"
+    "dist": "npm run build",
+    "publish": "electron-builder --mac --publish=always"
   },
   "keywords": [
     "clipboard",
@@ -18,20 +19,21 @@
     "keyboard-shortcut",
     "ctrl-shift-c",
     "research",
-    "writing",
-    "copystack"
+    "writing"
   ],
-  "author": "CopyStack",
+  "author": "ClipAppend",
   "license": "MIT",
   "devDependencies": {
     "electron": "^28.0.0",
     "electron-builder": "^24.13.3"
   },
-  "dependencies": {},
+  "dependencies": {
+    "electron-updater": "^6.1.7"
+  },
   "build": {
-    "appId": "com.copystack.productivity",
-    "productName": "CopyStack",
-    "copyright": "Copyright © 2024 CopyStack",
+    "appId": "com.clipappend.productivity",
+    "productName": "ClipAppend",
+    "copyright": "Copyright © 2024 ClipAppend",
     "directories": {
       "output": "dist"
     },
@@ -39,10 +41,7 @@
       "main.js",
       "index.html",
       "style.css",
-      "package.json",
-      "CSLogo.png",
-      "CSLogo Black Background.png",
-      "CSLogo Black transparent backgound.png"
+      "package.json"
     ],
     "mac": {
       "category": "public.app-category.productivity",
@@ -61,7 +60,7 @@
       "target": "AppImage"
     },
     "dmg": {
-      "title": "CopyStack - Advanced Clipboard Tool",
+      "title": "ClipAppend - Keyboard Clipboard Tool",
       "contents": [
         {
           "x": 130,
@@ -74,6 +73,11 @@
           "path": "/Applications"
         }
       ]
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "yourusername",
+      "repo": "clipappend"
     }
   }
 }

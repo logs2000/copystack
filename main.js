@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, globalShortcut, clipboard, nativeImage, systemPreferences, dialog } = require('electron');
+const { app, BrowserWindow, Tray, Menu, globalShortcut, clipboard, nativeImage, systemPreferences, dialog, nativeTheme } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -6,28 +6,50 @@ let tray = null;
 let mainWindow = null;
 let pendingAppend = false;
 
-// Create tray icon using professional logo
+// Create adaptive tray icon based on OS theme
 const createTrayIcon = () => {
   try {
-    // Try to load the transparent background logo first
-    const logoPath = path.join(__dirname, 'CSLogo Black transparent backgound.png');
+    let logoPath;
+    
+    if (process.platform === 'darwin') {
+      // macOS: Use system theme detection
+      const isDarkMode = nativeTheme.shouldUseDarkColors;
+      
+      if (isDarkMode) {
+        // Dark mode: use white logo
+        logoPath = path.join(__dirname, 'CSLogo - White.png');
+        console.log('Using white logo for macOS dark mode');
+      } else {
+        // Light mode: use black logo
+        logoPath = path.join(__dirname, 'CSLogo - Black.png');
+        console.log('Using black logo for macOS light mode');
+      }
+    } else {
+      // Windows/Linux: typically use black logo for light taskbar
+      logoPath = path.join(__dirname, 'CSLogo - Black.png');
+      console.log('Using black logo for Windows/Linux');
+    }
+    
+    // Try to load the theme-appropriate logo
     if (fs.existsSync(logoPath)) {
       const image = nativeImage.createFromPath(logoPath);
       return image.resize({ width: 16, height: 16 });
     }
     
-    // Fallback to regular logo
-    const fallbackLogoPath = path.join(__dirname, 'CSLogo.png');
-    if (fs.existsSync(fallbackLogoPath)) {
-      const image = nativeImage.createFromPath(fallbackLogoPath);
+    // Fallback to white logo
+    const whiteLogoPath = path.join(__dirname, 'CSLogo - White.png');
+    if (fs.existsSync(whiteLogoPath)) {
+      const image = nativeImage.createFromPath(whiteLogoPath);
+      console.log('Using white logo as fallback');
       return image.resize({ width: 16, height: 16 });
     }
     
-    // Final fallback - simple CS text icon
+    // Final fallback - simple CS text icon that adapts to theme
+    const isDark = process.platform === 'darwin' ? nativeTheme.shouldUseDarkColors : false;
     const iconSVG = `
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-        <rect width="16" height="16" fill="white" stroke="#333" stroke-width="1"/>
-        <text x="8" y="11" font-family="Arial, sans-serif" font-size="8" font-weight="bold" text-anchor="middle" fill="black">CS</text>
+        <rect width="16" height="16" fill="${isDark ? '#333' : '#fff'}" stroke="${isDark ? '#666' : '#333'}" stroke-width="1"/>
+        <text x="8" y="11" font-family="Arial, sans-serif" font-size="8" font-weight="bold" text-anchor="middle" fill="${isDark ? '#fff' : '#000'}">CS</text>
       </svg>
     `;
     
@@ -37,6 +59,15 @@ const createTrayIcon = () => {
     console.error('Failed to create tray icon:', error);
     // Emergency fallback
     return nativeImage.createEmpty();
+  }
+};
+
+// Update tray icon when theme changes (macOS)
+const updateTrayIconForTheme = () => {
+  if (tray && process.platform === 'darwin') {
+    const newIcon = createTrayIcon();
+    tray.setImage(newIcon);
+    console.log('Updated tray icon for theme change');
   }
 };
 
@@ -204,12 +235,25 @@ app.on('window-all-closed', (event) => {
   event.preventDefault();
 });
 
+// Open accessibility settings
+const openAccessibilitySettings = () => {
+  if (process.platform === 'darwin') {
+    require('child_process').exec('open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"');
+  } else if (process.platform === 'win32') {
+    // Windows accessibility settings
+    require('child_process').exec('ms-settings:easeofaccess');
+  } else {
+    // Linux - varies by distro, try common locations
+    require('child_process').exec('gnome-control-center universal-access || unity-control-center universal-access || systemsettings5 kcm_accessibility');
+  }
+};
+
 // Check and prompt for accessibility permissions
-const checkAccessibilityPermissions = async () => {
+const checkAccessibilityPermissions = async (showDialog = true) => {
   if (process.platform === 'darwin') {
     const hasPermission = systemPreferences.isTrustedAccessibilityClient(false);
     
-    if (!hasPermission) {
+    if (!hasPermission && showDialog) {
       console.log('Accessibility permission required');
       
       // Show permission dialog
@@ -224,10 +268,8 @@ const checkAccessibilityPermissions = async () => {
       });
       
       if (result.response === 0) {
-        // Open System Settings
-        require('child_process').exec('open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"');
+        openAccessibilitySettings();
       } else if (result.response === 2) {
-        // Quit
         app.quit();
         return false;
       }
@@ -253,8 +295,14 @@ app.whenReady().then(async () => {
   createTray();
   console.log('CopyStack tray setup');
   
-  // Check accessibility permissions
-  const hasPermissions = await checkAccessibilityPermissions();
+  // Listen for theme changes on macOS
+  if (process.platform === 'darwin') {
+    nativeTheme.on('updated', updateTrayIconForTheme);
+    console.log('Theme change listener registered');
+  }
+  
+  // Check accessibility permissions with startup dialog
+  const hasPermissions = await checkAccessibilityPermissions(true);
   
   registerShortcuts();
   console.log('CopyStack shortcuts registered');

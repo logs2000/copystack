@@ -77,10 +77,22 @@ h1 {
     display: flex;
     gap: 10px;
     margin-top: 15px;
+    flex-wrap: wrap;
 }
 
 .controls button {
     flex: 1;
+    min-width: 150px;
+}
+
+@media (max-width: 600px) {
+    .controls {
+        flex-direction: column;
+    }
+    
+    .controls button {
+        width: 100%;
+    }
 }
 
 h2 {
