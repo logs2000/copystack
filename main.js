@@ -9,52 +9,54 @@ let pendingAppend = false;
 // Create adaptive tray icon based on OS theme
 const createTrayIcon = () => {
   try {
-    let logoPath;
-    
     if (process.platform === 'darwin') {
-      // macOS: Use system theme detection
-      const isDarkMode = nativeTheme.shouldUseDarkColors;
+      // macOS: Always use black logo and let the system handle inversion
+      // macOS automatically inverts menu bar icons based on the menu bar appearance
+      const logoPath = path.join(__dirname, 'CSLogo - Black.png');
       
-      if (isDarkMode) {
-        // Dark mode: use white logo
-        logoPath = path.join(__dirname, 'CSLogo - White.png');
-        console.log('Using white logo for macOS dark mode');
-      } else {
-        // Light mode: use black logo
-        logoPath = path.join(__dirname, 'CSLogo - Black.png');
-        console.log('Using black logo for macOS light mode');
+      if (fs.existsSync(logoPath)) {
+        const image = nativeImage.createFromPath(logoPath);
+        const resizedImage = image.resize({ width: 16, height: 16 });
+        // Mark as template image so macOS can handle theme adaptation automatically
+        resizedImage.setTemplateImage(true);
+        console.log('Using black template logo for macOS (system will auto-invert)');
+        return resizedImage;
       }
     } else {
-      // Windows/Linux: typically use black logo for light taskbar
-      logoPath = path.join(__dirname, 'CSLogo - Black.png');
-      console.log('Using black logo for Windows/Linux');
+      // Windows/Linux: use black logo for light taskbars
+      const logoPath = path.join(__dirname, 'CSLogo - Black.png');
+      if (fs.existsSync(logoPath)) {
+        const image = nativeImage.createFromPath(logoPath);
+        console.log('Using black logo for Windows/Linux');
+        return image.resize({ width: 16, height: 16 });
+      }
     }
     
-    // Try to load the theme-appropriate logo
-    if (fs.existsSync(logoPath)) {
-      const image = nativeImage.createFromPath(logoPath);
-      return image.resize({ width: 16, height: 16 });
+    // Fallback to black logo
+    const blackLogoPath = path.join(__dirname, 'CSLogo - Black.png');
+    if (fs.existsSync(blackLogoPath)) {
+      const image = nativeImage.createFromPath(blackLogoPath);
+      const resizedImage = image.resize({ width: 16, height: 16 });
+      if (process.platform === 'darwin') {
+        resizedImage.setTemplateImage(true);
+      }
+      console.log('Using black logo as fallback');
+      return resizedImage;
     }
     
-    // Fallback to white logo
-    const whiteLogoPath = path.join(__dirname, 'CSLogo - White.png');
-    if (fs.existsSync(whiteLogoPath)) {
-      const image = nativeImage.createFromPath(whiteLogoPath);
-      console.log('Using white logo as fallback');
-      return image.resize({ width: 16, height: 16 });
+    // Final fallback - simple CS text icon
+  const iconSVG = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+        <text x="8" y="11" font-family="Arial, sans-serif" font-size="8" font-weight="bold" text-anchor="middle" fill="black">CS</text>
+    </svg>
+  `;
+  
+  const dataURL = 'data:image/svg+xml;base64,' + Buffer.from(iconSVG).toString('base64');
+    const image = nativeImage.createFromDataURL(dataURL).resize({ width: 16, height: 16 });
+    if (process.platform === 'darwin') {
+      image.setTemplateImage(true);
     }
-    
-    // Final fallback - simple CS text icon that adapts to theme
-    const isDark = process.platform === 'darwin' ? nativeTheme.shouldUseDarkColors : false;
-    const iconSVG = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-        <rect width="16" height="16" fill="${isDark ? '#333' : '#fff'}" stroke="${isDark ? '#666' : '#333'}" stroke-width="1"/>
-        <text x="8" y="11" font-family="Arial, sans-serif" font-size="8" font-weight="bold" text-anchor="middle" fill="${isDark ? '#fff' : '#000'}">CS</text>
-      </svg>
-    `;
-    
-    const dataURL = 'data:image/svg+xml;base64,' + Buffer.from(iconSVG).toString('base64');
-    return nativeImage.createFromDataURL(dataURL).resize({ width: 16, height: 16 });
+    return image;
   } catch (error) {
     console.error('Failed to create tray icon:', error);
     // Emergency fallback
@@ -62,14 +64,8 @@ const createTrayIcon = () => {
   }
 };
 
-// Update tray icon when theme changes (macOS)
-const updateTrayIconForTheme = () => {
-  if (tray && process.platform === 'darwin') {
-    const newIcon = createTrayIcon();
-    tray.setImage(newIcon);
-    console.log('Updated tray icon for theme change');
-  }
-};
+// Note: No need to update tray icon for theme changes when using template images
+// macOS automatically handles the inversion based on menu bar appearance
 
 const handleAppendShortcut = () => {
   const currentClipboard = clipboard.readText() || '';
@@ -78,7 +74,7 @@ const handleAppendShortcut = () => {
   const startTime = Date.now();
   const checkInterval = setInterval(() => {
     const newClipboard = clipboard.readText() || '';
-    
+
     if (pendingAppend && newClipboard !== currentClipboard) {
       const appendedText = currentClipboard ? currentClipboard + '\n' + newClipboard : newClipboard;
       clipboard.writeText(appendedText);
@@ -122,68 +118,68 @@ const createWindow = () => {
 const createTray = () => {
   try {
     console.log('🔍 Creating CopyStack tray icon...');
-    const icon = createTrayIcon();
-    tray = new Tray(icon);
+  const icon = createTrayIcon();
+  tray = new Tray(icon);
     
     console.log('✅ CopyStack tray created successfully');
-    
-    const shortcutText = process.platform === 'darwin' ? '⌘⇧C' : 'Ctrl+Shift+C';
-    const normalCopyText = process.platform === 'darwin' ? '⌘C' : 'Ctrl+C';
-    
-    const contextMenu = Menu.buildFromTemplate([
-      {
+  
+  const shortcutText = process.platform === 'darwin' ? '⌘⇧C' : 'Ctrl+Shift+C';
+  const normalCopyText = process.platform === 'darwin' ? '⌘C' : 'Ctrl+C';
+  
+  const contextMenu = Menu.buildFromTemplate([
+    {
         label: 'CopyStack v1.0 - Running',
-        enabled: false
-      },
-      {
-        type: 'separator'
-      },
-      {
-        label: 'Keyboard Shortcuts:',
-        enabled: false
-      },
-      {
-        label: `${normalCopyText} - Normal copy`,
-        enabled: false
-      },
-      {
+      enabled: false
+    },
+    {
+      type: 'separator'
+    },
+    {
+      label: 'Keyboard Shortcuts:',
+      enabled: false
+    },
+    {
+      label: `${normalCopyText} - Normal copy`,
+      enabled: false
+    },
+    {
         label: `${shortcutText} - Stack clipboard`,
-        enabled: false
-      },
-      {
-        type: 'separator'
-      },
-      {
+      enabled: false
+    },
+    {
+      type: 'separator'
+    },
+    {
         label: 'Clear Clipboard',
-        click: () => {
-          clipboard.clear();
+      click: () => {
+        clipboard.clear();
           console.log('Clipboard cleared');
-        }
-      },
-      {
+      }
+    },
+    {
         label: 'Settings & Instructions',
-        click: () => {
-          if (mainWindow) {
-            mainWindow.show();
+      click: () => {
+        if (mainWindow) {
+          mainWindow.show();
             mainWindow.focus();
             console.log('Settings window shown');
           }
-        }
-      },
-      {
-        type: 'separator'
-      },
-      {
-        label: 'Quit CopyStack',
-        click: () => {
-          console.log('Quitting CopyStack...');
-          app.isQuiting = true;
-          app.quit();
-        }
       }
-    ]);
-    
-    tray.setContextMenu(contextMenu);
+    },
+    {
+      type: 'separator'
+    },
+    {
+        label: 'Quit CopyStack',
+      click: () => {
+          console.log('Quitting CopyStack...');
+        app.isQuiting = true;
+        app.quit();
+      }
+    }
+  ]);
+  
+  tray.setContextMenu(contextMenu);
     tray.setToolTip('CopyStack - Advanced Clipboard Tool');
     
     console.log('✅ CopyStack menu configured');
@@ -199,11 +195,11 @@ const createTray = () => {
         }
       }
     });
-    
-    tray.on('double-click', () => {
+  
+  tray.on('double-click', () => {
       console.log('👆👆 CopyStack tray double-clicked!');
-      if (mainWindow) {
-        mainWindow.show();
+    if (mainWindow) {
+      mainWindow.show();
         mainWindow.focus();
       }
     });
@@ -251,7 +247,14 @@ const openAccessibilitySettings = () => {
 // Check and prompt for accessibility permissions
 const checkAccessibilityPermissions = async (showDialog = true) => {
   if (process.platform === 'darwin') {
-    const hasPermission = systemPreferences.isTrustedAccessibilityClient(false);
+    // First, try to check if we already have permission
+    let hasPermission = systemPreferences.isTrustedAccessibilityClient(false);
+    
+    if (!hasPermission) {
+      // Request permission with prompt - this will cause the app to appear in the list
+      hasPermission = systemPreferences.isTrustedAccessibilityClient(true);
+      console.log('Requested accessibility permission - app should now appear in System Settings');
+    }
     
     if (!hasPermission && showDialog) {
       console.log('Accessibility permission required');
@@ -261,7 +264,7 @@ const checkAccessibilityPermissions = async (showDialog = true) => {
         type: 'info',
         title: 'CopyStack Setup Required',
         message: 'CopyStack needs accessibility permissions to function properly.',
-        detail: 'Please grant accessibility permission in System Settings → Privacy & Security → Accessibility, then restart CopyStack.\n\nThis allows CopyStack to capture selected text when you press Cmd+Shift+C.',
+        detail: 'CopyStack should now appear in System Settings → Privacy & Security → Accessibility.\n\nPlease enable CopyStack in the list, then restart the app.\n\nThis allows CopyStack to capture selected text when you press Cmd+Shift+C.',
         buttons: ['Open System Settings', 'Continue Anyway', 'Quit'],
         defaultId: 0,
         cancelId: 2
@@ -295,11 +298,8 @@ app.whenReady().then(async () => {
   createTray();
   console.log('CopyStack tray setup');
   
-  // Listen for theme changes on macOS
-  if (process.platform === 'darwin') {
-    nativeTheme.on('updated', updateTrayIconForTheme);
-    console.log('Theme change listener registered');
-  }
+  // Note: Theme change listener not needed when using template images
+  // macOS automatically handles icon appearance based on menu bar theme
   
   // Check accessibility permissions with startup dialog
   const hasPermissions = await checkAccessibilityPermissions(true);

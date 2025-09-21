@@ -165,11 +165,18 @@
         
         function checkAccessibilityPermission() {
             if (process.platform === 'darwin') {
-                const hasPermission = systemPreferences.isTrustedAccessibilityClient(false);
+                // First check without prompting
+                let hasPermission = systemPreferences.isTrustedAccessibilityClient(false);
+                
+                if (!hasPermission) {
+                    // Request permission to make app appear in list
+                    hasPermission = systemPreferences.isTrustedAccessibilityClient(true);
+                }
+                
                 if (hasPermission) {
                     alert('✅ Accessibility permission is granted! CopyStack should work properly.');
                 } else {
-                    alert('❌ Accessibility permission is NOT granted.\n\nPlease use the "Open Accessibility Settings" button to grant permission, then restart CopyStack.');
+                    alert('❌ Accessibility permission is NOT granted.\n\nCopyStack should now appear in System Settings → Privacy & Security → Accessibility.\n\nPlease enable it in the list, then restart CopyStack.');
                 }
             } else {
                 alert('Accessibility permissions are not required on this platform.');

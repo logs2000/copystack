@@ -31,9 +31,9 @@
     "electron-updater": "^6.1.7"
   },
   "build": {
-    "appId": "com.clipappend.productivity",
-    "productName": "ClipAppend",
-    "copyright": "Copyright © 2024 ClipAppend",
+    "appId": "com.copystack.productivity",
+    "productName": "CopyStack",
+    "copyright": "Copyright © 2024 CopyStack",
     "directories": {
       "output": "dist"
     },
@@ -41,7 +41,9 @@
       "main.js",
       "index.html",
       "style.css",
-      "package.json"
+      "package.json",
+      "CSLogo - Black.png",
+      "CSLogo - White.png"
     ],
     "mac": {
       "category": "public.app-category.productivity",
@@ -60,7 +62,7 @@
       "target": "AppImage"
     },
     "dmg": {
-      "title": "ClipAppend - Keyboard Clipboard Tool",
+      "title": "CopyStack - Advanced Clipboard Tool",
       "contents": [
         {
           "x": 130,
