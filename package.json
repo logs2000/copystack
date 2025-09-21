@@ -1,0 +1,77 @@
+{
+  "name": "clipappend",
+  "version": "1.0.0",
+  "description": "Append to clipboard with Ctrl+Shift+C - Perfect for researchers and writers",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --mac",
+    "build-win": "electron-builder --win",
+    "build-linux": "electron-builder --linux",
+    "clean": "rm -rf dist node_modules package-lock.json && npm install",
+    "dist": "npm run build"
+  },
+  "keywords": [
+    "clipboard",
+    "productivity",
+    "append",
+    "keyboard-shortcut",
+    "ctrl-shift-c",
+    "research",
+    "writing"
+  ],
+  "author": "ClipAppend",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "auto-launch": "^5.0.6"
+  },
+  "build": {
+    "appId": "com.clipappend.productivity",
+    "productName": "ClipAppend",
+    "copyright": "Copyright © 2024 ClipAppend",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "index.html",
+      "style.css",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "darkModeSupport": true
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    },
+    "dmg": {
+      "title": "ClipAppend - Keyboard Clipboard Tool",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
+  }
+}

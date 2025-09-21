@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClipAppend - Simple Clipboard Tool</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📋 ClipAppend</h1>
+        <p class="subtitle">Simple keyboard shortcut for appending text</p>
+        
+        <div class="section status-section">
+            <h2>⚡ How It Works</h2>
+            <div class="how-it-works">
+                <div class="step-item">
+                    <span class="step-number">1</span>
+                    <div class="step-content">
+                        <strong>Copy initial text</strong>
+                        <p>Select text and press Cmd+C (normal copy)</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <span class="step-number">2</span>
+                    <div class="step-content">
+                        <strong>Select more text</strong>
+                        <p>Highlight additional text anywhere</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <span class="step-number">3</span>
+                    <div class="step-content">
+                        <strong>Press Cmd+Shift+C</strong>
+                        <p>This appends the selected text to your clipboard</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <span class="step-number">4</span>
+                    <div class="step-content">
+                        <strong>Paste normally</strong>
+                        <p>Use Cmd+V to paste all your collected text</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>⌨️ Keyboard Shortcuts</h2>
+            <div class="shortcuts">
+                <div class="shortcut-item">
+                    <div class="shortcut-keys">
+                        <kbd>Ctrl</kbd> + <kbd>C</kbd>
+                        <span class="mac-text">(<kbd>⌘</kbd> + <kbd>C</kbd> on Mac)</span>
+                    </div>
+                    <span>Normal copy - replaces clipboard (unchanged)</span>
+                </div>
+                <div class="shortcut-item primary-shortcut">
+                    <div class="shortcut-keys">
+                        <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>
+                        <span class="mac-text">(<kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>C</kbd> on Mac)</span>
+                    </div>
+                    <span>Copy selected text and append to existing clipboard</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🧪 Test It Now</h2>
+            <p><strong>Try it with these sample texts:</strong></p>
+            <div class="test-texts">
+                <div class="test-text" onclick="selectText(this)">First sample text to copy</div>
+                <div class="test-text" onclick="selectText(this)">Second sample text to append</div>
+                <div class="test-text" onclick="selectText(this)">Third sample text to append</div>
+            </div>
+            <div class="test-instructions">
+                <p><strong>Instructions:</strong></p>
+                <ol>
+                    <li>Click on "First sample text" above to select it</li>
+                    <li>Press <strong>Cmd+C</strong> to copy it normally</li>
+                    <li>Click on "Second sample text" to select it</li>
+                    <li>Press <strong>Cmd+Shift+C</strong> to copy and append it</li>
+                    <li>Check your clipboard below - you should see both texts!</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📋 Current Clipboard</h2>
+            <textarea id="clipboardContent" readonly placeholder="Your clipboard content will appear here..."></textarea>
+            <div class="clipboard-controls">
+                <button id="refreshClipboard">🔄 Refresh</button>
+                <button id="clearClipboard">🗑️ Clear Clipboard</button>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>💡 Perfect For</h2>
+            <ul>
+                <li><strong>Research:</strong> Collect quotes from multiple websites</li>
+                <li><strong>Writing:</strong> Gather notes and references from different sources</li>
+                <li><strong>Documentation:</strong> Compile information from various documents</li>
+                <li><strong>Lists:</strong> Build shopping lists, todo items, contact info</li>
+                <li><strong>Programming:</strong> Collect code snippets and documentation</li>
+                <li><strong>Email:</strong> Compose messages with content from multiple sources</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>⚙️ Background Service</h2>
+            <p>ClipAppend runs silently in your menu bar. The Ctrl+Shift+C shortcut works system-wide in any application - browsers, text editors, PDFs, anywhere you can select text!</p>
+            <p>You can safely close this window - ClipAppend will keep running in the background.</p>
+            <button id="hideWindow">Hide This Window</button>
+        </div>
+        
+        <div class="footer">
+            <p>ClipAppend v1.0 - Simple tools for productivity 🚀</p>
+        </div>
+    </div>
+
+    <script>
+        const { clipboard } = require('electron');
+        
+        const clipboardTextarea = document.getElementById('clipboardContent');
+        const refreshBtn = document.getElementById('refreshClipboard');
+        const clearBtn = document.getElementById('clearClipboard');
+        const hideBtn = document.getElementById('hideWindow');
+        
+        function updateClipboardDisplay() {
+            const clipText = clipboard.readText();
+            clipboardTextarea.value = clipText || 'Clipboard is empty - try the test above!';
+        }
+        
+        function selectText(element) {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(element);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+        
+        refreshBtn.addEventListener('click', updateClipboardDisplay);
+        
+        clearBtn.addEventListener('click', () => {
+            clipboard.clear();
+            updateClipboardDisplay();
+        });
+        
+        hideBtn.addEventListener('click', () => {
+            window.close();
+        });
+        
+        // Update clipboard display on load
+        updateClipboardDisplay();
+        
+        // Auto-refresh every 2 seconds  
+        setInterval(updateClipboardDisplay, 2000);
+    </script>
+</body>
+</html>
