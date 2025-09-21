@@ -127,9 +127,15 @@
             <h2>Background Service</h2>
             <p>CopyStack runs as a background service in your menu bar. The Cmd+Shift+C shortcut works system-wide in any application - browsers, editors, PDFs, anywhere you can select text!</p>
             <p>Close this window anytime - CopyStack continues running in the background.</p>
+
+            <div class="app-info">
+                <h3>📍 App Location Info</h3>
+                <div id="appLocation">Loading...</div>
+            </div>
+
             <div class="controls">
                 <button id="hideWindow">Hide Settings Window</button>
-                <button id="checkPermissions">Check Permission Status</button>
+                <button id="checkPermissions">Check Permissions</button>
                 <button id="openAccessibilitySettings">Open Accessibility Settings</button>
                 <button id="checkUpdates">Check for Updates</button>
             </div>
@@ -151,6 +157,7 @@
         const checkPermissionsBtn = document.getElementById('checkPermissions');
         const openSettingsBtn = document.getElementById('openAccessibilitySettings');
         const checkUpdatesBtn = document.getElementById('checkUpdates');
+        const appLocationDiv = document.getElementById('appLocation');
         
         function updateClipboardDisplay() {
             const clipText = clipboard.readText();
@@ -163,6 +170,35 @@
             range.selectNodeContents(element);
             selection.removeAllRanges();
             selection.addRange(range);
+        }
+
+        function updateAppLocation() {
+            try {
+                const { app } = require('electron').remote;
+                const appPath = app.getAppPath();
+                const isPackaged = app.isPackaged;
+                const execPath = process.execPath;
+
+                let info = '';
+                info += `<strong>App Path:</strong> ${appPath}<br>`;
+                info += `<strong>Packaged:</strong> ${isPackaged ? '✅ Yes (installed)' : '🔧 No (development)'}<br>`;
+                info += `<strong>Executable:</strong> ${execPath}<br>`;
+                info += `<strong>Platform:</strong> ${process.platform} ${process.arch}<br>`;
+
+                if (!isPackaged) {
+                    info += `<br><strong>⚠️ Running in development mode!</strong><br>`;
+                    info += `Install the DMG version for full functionality.`;
+                } else if (!appPath.includes('/Applications/')) {
+                    info += `<br><strong>⚠️ Not installed in Applications!</strong><br>`;
+                    info += `Move CopyStack.app to /Applications/ for best results.`;
+                } else {
+                    info += `<br><strong>✅ Properly installed</strong>`;
+                }
+
+                appLocationDiv.innerHTML = info;
+            } catch (error) {
+                appLocationDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+            }
         }
         
         function checkAccessibilityPermission() {
@@ -226,8 +262,9 @@
         
         // Update clipboard display on load
         updateClipboardDisplay();
-        
-        // Auto-refresh every 2 seconds  
+        updateAppLocation();
+
+        // Auto-refresh every 2 seconds
         setInterval(updateClipboardDisplay, 2000);
     </script>
 </body>

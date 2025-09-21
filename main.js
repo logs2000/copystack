@@ -450,7 +450,19 @@ const checkAccessibilityPermissions = async (showDialog = true) => {
 
 app.whenReady().then(async () => {
   console.log('CopyStack starting...');
-  
+
+  // Show app location for debugging
+  const appPath = app.getAppPath();
+  const isPackaged = app.isPackaged;
+  console.log('📍 App location:', appPath);
+  console.log('📦 Is packaged:', isPackaged);
+
+  if (isPackaged) {
+    console.log('✅ Running from installed app');
+  } else {
+    console.log('🔧 Running in development mode from:', appPath);
+  }
+
   // Hide dock icon completely - pure background service
   if (process.platform === 'darwin') {
     app.dock.hide();

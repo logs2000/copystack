@@ -80,6 +80,27 @@ h1 {
     flex-wrap: wrap;
 }
 
+.app-info {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 15px 0;
+}
+
+.app-info h3 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #495057;
+}
+
+.app-info div {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 12px;
+    color: #6c757d;
+    word-break: break-all;
+}
+
 .controls button {
     flex: 1;
     min-width: 140px;
