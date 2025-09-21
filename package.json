@@ -39,7 +39,10 @@
       "main.js",
       "index.html",
       "style.css",
-      "package.json"
+      "package.json",
+      "CSLogo.png",
+      "CSLogo Black Background.png",
+      "CSLogo Black transparent backgound.png"
     ],
     "mac": {
       "category": "public.app-category.productivity",

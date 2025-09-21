@@ -8,11 +8,27 @@
 </head>
 <body>
     <div class="container">
-        <h1>📚 CopyStack</h1>
-        <p class="subtitle">Advanced keyboard shortcuts for power users</p>
+        <h1>CopyStack</h1>
+        <p class="subtitle">Advanced Clipboard Stacking Tool</p>
         
         <div class="section status-section">
-            <h2>⚡ How CopyStack Works</h2>
+            <h2>Setup Required</h2>
+            <div class="setup-warning">
+                <h3>Accessibility Permission Required</h3>
+                <p><strong>CopyStack needs accessibility permissions to capture selected text.</strong></p>
+                <ol>
+                    <li>Open <strong>System Settings</strong> (or System Preferences)</li>
+                    <li>Go to <strong>Privacy & Security</strong> → <strong>Accessibility</strong></li>
+                    <li>Find <strong>CopyStack</strong> in the list and enable it</li>
+                    <li>If CopyStack isn't listed, click the <strong>+</strong> button and add it</li>
+                    <li>Restart CopyStack after granting permission</li>
+                </ol>
+                <p><em>Without this permission, the Cmd+Shift+C shortcut won't work properly.</em></p>
+            </div>
+        </div>
+        
+        <div class="section status-section">
+            <h2>How CopyStack Works</h2>
             <div class="how-it-works">
                 <div class="step-item">
                     <span class="step-number">1</span>
@@ -108,24 +124,29 @@
         </div>
         
         <div class="section">
-            <h2>⚙️ Advanced Background Service</h2>
-            <p>CopyStack runs as an advanced system service in your menu bar. The Cmd+Shift+C shortcut works system-wide in any application - browsers, editors, PDFs, anywhere you can select text!</p>
-            <p>Close this window anytime - CopyStack continues running in the background like a professional tool.</p>
-            <button id="hideWindow">Hide Settings Window</button>
+            <h2>Background Service</h2>
+            <p>CopyStack runs as a background service in your menu bar. The Cmd+Shift+C shortcut works system-wide in any application - browsers, editors, PDFs, anywhere you can select text!</p>
+            <p>Close this window anytime - CopyStack continues running in the background.</p>
+            <div class="controls">
+                <button id="hideWindow">Hide Settings Window</button>
+                <button id="checkPermissions">Check Accessibility Permission</button>
+            </div>
         </div>
         
         <div class="footer">
-            <p>CopyStack v1.0 - Professional productivity tools for power users 🚀</p>
+            <p>CopyStack v1.0 - Professional productivity tool for power users</p>
         </div>
     </div>
 
     <script>
-        const { clipboard } = require('electron');
+        const { clipboard, ipcRenderer } = require('electron');
+        const { systemPreferences } = require('electron');
         
         const clipboardTextarea = document.getElementById('clipboardContent');
         const refreshBtn = document.getElementById('refreshClipboard');
         const clearBtn = document.getElementById('clearClipboard');
         const hideBtn = document.getElementById('hideWindow');
+        const checkPermissionsBtn = document.getElementById('checkPermissions');
         
         function updateClipboardDisplay() {
             const clipText = clipboard.readText();
@@ -140,6 +161,22 @@
             selection.addRange(range);
         }
         
+        function checkAccessibilityPermission() {
+            if (process.platform === 'darwin') {
+                const hasPermission = systemPreferences.isTrustedAccessibilityClient(false);
+                if (hasPermission) {
+                    alert('✅ Accessibility permission is granted! CopyStack should work properly.');
+                } else {
+                    const result = confirm('❌ Accessibility permission is NOT granted.\n\nWould you like to open System Settings to grant permission?');
+                    if (result) {
+                        require('child_process').exec('open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"');
+                    }
+                }
+            } else {
+                alert('Accessibility permissions are not required on this platform.');
+            }
+        }
+        
         refreshBtn.addEventListener('click', updateClipboardDisplay);
         
         clearBtn.addEventListener('click', () => {
@@ -150,6 +187,8 @@
         hideBtn.addEventListener('click', () => {
             window.close();
         });
+        
+        checkPermissionsBtn.addEventListener('click', checkAccessibilityPermission);
         
         // Update clipboard display on load
         updateClipboardDisplay();

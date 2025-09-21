@@ -49,6 +49,40 @@ h1 {
     background: #f0fff4;
 }
 
+.setup-warning {
+    background: #fef5e7;
+    border: 1px solid #f6ad55;
+    border-radius: 6px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.setup-warning h3 {
+    color: #c53030;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.setup-warning ol {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.setup-warning li {
+    margin: 5px 0;
+    line-height: 1.4;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.controls button {
+    flex: 1;
+}
+
 h2 {
     color: #2d3748;
     margin-bottom: 15px;
